@@ -1,0 +1,111 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html> 
+  <head> 
+    <title>Urlshrink</title> 
+    <link href='http://www.w3.org/StyleSheets/Core/Swiss' rel='stylesheet' type='text/css' /> 
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+      <script type="text/javascript" src="http://dev.jquery.com/view/trunk/plugins/validate/jquery.validate.js"></script>
+      <script type="text/javascript" src="ZeroClipboard.js"></script>
+    
+    <script type="text/javascript">                                         
+        $(document).ready(function() {
+           
+            var clip = new ZeroClipboard.Client();           
+            clip.hide();
+            $('#d_clip_button').hide();
+           
+            //focus on the urlbox 
+            $("input#urlbox").focus();            
+        
+            $("#urlbox").keyup(function(event){
+              if(event.keyCode == 13){
+                $("#submitbutton").click();
+              }
+            });    
+            
+            $("#mainform").validate({
+                errorPlacement: function(error, element) {
+                     $('#response').html(error);
+                },
+                messages: {
+                    original: {required:"I require a URL to shrink.  I can't shrink nothingness."}
+                }
+            });
+                
+            
+            $(".button").click(function() {
+                  // validate and process form here
+              
+              	  var url = $("input#urlbox").val();
+              	  if ($("#mainform").valid()) {                        
+                        //$("#response").html("FUCK YOU");
+                        //alert(url);
+                        $.ajax({
+                            type: "POST",
+                            url: "/",
+                            dataType: 'json',
+                            data: $("#mainform").serialize(),
+                            success: function(data) {                          
+                              var json = jQuery.parseJSON(data)
+                              if(json.errormsg) {
+                                  $('#response').html("Oops. I messed up.  Computerspeak: " + json.errormsg);
+                              }
+                              else{
+                                 $('#response').html("URL " + json.original + "\n shrunk to: " + json.shrunk);
+
+                                 clip.show();
+                                 $('#d_clip_button').show();
+                                 clip.glue( 'd_clip_button', 'd_clip_container' );
+                                 clip.setHandCursor( false );
+                                 clip.setText( "http://" + document.location.hostname + ":4567/" + json.shrunk );  
+                              }
+                                                                                                          
+                            }
+                          }); //end ajax
+                          return false;                    
+                  }//end if
+            })//end click
+                
+        });     
+        
+        
+     </script>
+    <style media='screen' type='text/css'> 
+      #urlbox{
+          width:380px;
+          height:25px;
+          align:center;
+      }
+      
+      label { width: 10em; float: left; }
+      label.error { float: none; color: red;  vertical-align: top; }
+      .button {
+          margin-left: 0em;
+          width:150px; 
+          text-align:center; 
+          border:1px solid black; 
+          background-color:#ccc; 
+      }
+      #d_clip_button.hover { background-color:#eee; }
+      #d_clip_button.active { background-color:#aaa; }
+    </style>     
+  </head> 
+  <body> 
+    <p></p> 
+    <p></p> 
+    <div id='header'> 
+      <h1>Urlshrink.</h1> 
+    </div> 
+    <div id='content'> 
+      <form id='mainform' name='url' onSubmit="return false;">
+        <input class='text required url' id='urlbox' name='original' type='text' /> &nbsp;
+        <p/><input class='button' type='button' value='Shrink!' id='submitbutton'/>
+        <div id="d_clip_container" style="position:relative">
+             <div class='button' id="d_clip_button">Copy to Clipboard</div>
+        </div>
+      </form>
+      <p><div id='response' class='responsebox' id='responsebox'></div></p> 
+    </div> 
+  </body> 
+</html>
