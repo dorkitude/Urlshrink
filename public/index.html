@@ -44,7 +44,7 @@
                         $.ajax({
                             type: "POST",
                             url: "/",
-                            dataType: 'json',
+                            //dataType: 'json',
                             data: $("#mainform").serialize(),
                             success: function(data) {                          
                               var json = jQuery.parseJSON(data)
