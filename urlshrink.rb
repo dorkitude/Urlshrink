@@ -7,7 +7,7 @@ require "sinatra/reloader" if development?  #this way we don't have to shut the 
 require 'dalli'
 require 'json'
 
-$cache = Dalli::Client.new('204.236.134.208:11211')  #Dalli is a very nice memcached client
+$cache = Dalli::Client.new('localhost:11211')  #Dalli is a very nice memcached client
 
 set :public, File.dirname(__FILE__) + '/public/'  #make sure Sinatra knows exactly where our public files are
 
