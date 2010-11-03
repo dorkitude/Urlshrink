@@ -1,0 +1,27 @@
+Urlshrink is a simple URL shortening app (kind of like the ones run at bit.ly or goo.gl but a lot less fancy).
+
+To run, simply run 'ruby urlshrink.rb' in a terminal.
+
+Required Gems:
+-Rubygems
+-Sinatra (and Sinatra reloader, if you want)
+-Dalli
+-JSON
+
+The front-end is a simple html+javascript (jQuery) app that communicates to the back end using JSON XHR calls.  Ajax ahoy!
+
+If you'd like to wire up your own front end, here's a simple API definition for you:
+
+1.  GET '/'
+    - Just gets index.html.  Nothing too fancy.
+2.  GET '/abcdefg'
+    -Redirects (via HTTP 301) to the original URL saved for key "abcdefg" or returns a 404.html page if one doesn't exist
+3.  POST '/' 
+    -POST a JSON key-value pair here that looks like the following:  {"original" : "http://someurl.com"}
+    -Returns one of the following:
+        Error: {"errormsg" : "some error message here"}
+            -OR-
+        Sucess: {"shrunk":"abcdefg", "original":"http://your.original.url"}  (here, "abcdefg" is the shortened key)
+
+TODO:
+-RESTify things more
