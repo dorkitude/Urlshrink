@@ -7,13 +7,28 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
       <script type="text/javascript" src="http://dev.jquery.com/view/trunk/plugins/validate/jquery.validate.js"></script>
       <script type="text/javascript" src="ZeroClipboard.js"></script>
-    
+      <script type="text/javascript" src="jquery.json-2.2.min.js"></script>
     <script type="text/javascript">                                         
-        $(document).ready(function() {
+        $(document).ready(function() {          
            
+            $.fn.serializeObject = function(){
+                var obj = {};
+
+                $.each( this.serializeArray(), function(i,o){
+                  var n = o.name,
+                    v = o.value;
+
+                    obj[n] = obj[n] === undefined ? v
+                      : $.isArray( obj[n] ) ? obj[n].concat( v )
+                      : [ obj[n], v ];
+                });
+
+                return obj;
+            };
+            
             var clip = new ZeroClipboard.Client();           
-            clip.hide();
             $('#d_clip_button').hide();
+            clip.hide();            
            
             //focus on the urlbox 
             $("input#urlbox").focus();            
@@ -31,34 +46,33 @@
                 messages: {
                     original: {required:"I require a URL to shrink.  I can't shrink nothingness."}
                 }
-            });
-                
+            });                
             
             $(".button").click(function() {
                   // validate and process form here
               
               	  var url = $("input#urlbox").val();
-              	  if ($("#mainform").valid()) {                        
-                        //$("#response").html("FUCK YOU");
-                        //alert(url);
+              	  var postdata = $.toJSON($("#mainform").serializeObject());
+              	  
+              	  if ($("#mainform").valid()) {                                                
                         $.ajax({
                             type: "POST",
                             url: "/",
-                            //dataType: 'json',
-                            data: $("#mainform").serialize(),
+                            dataType: 'json',
+                            data: postdata,
                             success: function(data) {                          
-                              var json = jQuery.parseJSON(data)
-                              if(json.errormsg) {
-                                  $('#response').html("Oops. I messed up.  Computerspeak: " + json.errormsg);
+                              if(data.errormsg) {
+                                  $('#response').html("Oops. I messed up.  Computerspeak: " + data.errormsg);
                               }
                               else{
-                                 $('#response').html("URL " + json.original + "\n shrunk to: " + json.shrunk);
+                                 var shrunk = document.location.href + data.shrunk
+                                 $('#response').html("URL " + data.original + "\n shrunk to: <a href='" + shrunk + "' target='_blank'>" + shrunk + "</a>" );
 
                                  clip.show();
                                  $('#d_clip_button').show();
                                  clip.glue( 'd_clip_button', 'd_clip_container' );
                                  clip.setHandCursor( false );
-                                 clip.setText( "http://" + document.location.hostname + ":4567/" + json.shrunk );  
+                                 clip.setText( shrunk );  
                               }
                                                                                                           
                             }
@@ -67,8 +81,7 @@
                   }//end if
             })//end click
                 
-        });     
-        
+        });             
         
      </script>
     <style media='screen' type='text/css'> 

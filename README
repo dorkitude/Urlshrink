@@ -17,11 +17,11 @@ If you'd like to wire up your own front end, here's a simple API definition for 
 2.  GET '/abcdefg'
     -Redirects (via HTTP 301) to the original URL saved for key "abcdefg" or returns a 404.html page if one doesn't exist
 3.  POST '/' 
-    -POST a JSON key-value pair here that looks like the following:  {"original" : "http://someurl.com"}
+    -POST a JSON key-value pair string here that looks like the following:  {"original" : "http://someurl.com"}
     -Returns one of the following:
         Error: {"errormsg" : "some error message here"}
             -OR-
         Sucess: {"shrunk":"abcdefg", "original":"http://your.original.url"}  (here, "abcdefg" is the shortened key)
 
-TODO:
--RESTify things more
+
+For TODOs, see Issues list

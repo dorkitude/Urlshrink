@@ -7,7 +7,11 @@ require "sinatra/reloader" if development?  #this way we don't have to shut the 
 require 'dalli'
 require 'json'
 
-$cache = Dalli::Client.new('localhost:11211')  #Dalli is a very nice memcached client
+serverip='localhost:11211'
+ENV['MEMCACHE_USERNAME']='mybucket' #Name of a membase SASL-authed bucket
+ENV['MEMCACHE_PASSWORD']='123456' #Password of above SASL-authed bucket
+
+$cache = Dalli::Client.new(serverip)  #Dalli is a very nice memcached client
 
 set :public, File.dirname(__FILE__) + '/public/'  #make sure Sinatra knows exactly where our public files are
 
@@ -17,7 +21,7 @@ get '/' do
   #end
 end
 
-get '/:key' do 
+get '/:key' do   
   orig = $cache.get(params[:key])
   not_found if orig.nil?
   redirect orig.to_s, 301   #301 redirects tell browsers that this resource has permanently moved.  This is good news for 
@@ -33,22 +37,24 @@ error do
 end
 
 post '/' do
-  uri = URI::parse(params[:original])
-  unless (!uri.nil?) and (uri.kind_of? URI::HTTP or uri.kind_of? URI::HTTPS)
-    JSON.generate({ "errormsg" => uri.to_s + " is not a valid URL.  Sorry :("})
-  else
-    key = getNextKey 
-    #key = 'DEV_KEY_ONLY'#TODO - replace with algo
-    $cache.set(key, uri)  #store them as actual URI objects so we can mess around with them later if we need to
-    JSON.generate({ "shrunk" => key, "original" => uri})
-  end
-end
+  begin
+    request.body.rewind #in case someone already read it
+    data = JSON.parse request.body.read
 
-# post "/api" do
-#     request.body.rewind  # in case someone already read it
-#     data = JSON.parse request.body.read
-#     "Hello #{data['name']}!"
-# end
+    uri = URI::parse(data['original'])
+    unless (!uri.nil?) and (uri.kind_of? URI::HTTP or uri.kind_of? URI::HTTPS)
+      raise "#{uri.to_s} is not a valid URL.  Sorry :("
+    else
+      key = getNextKey 
+      #key = 'DEV_KEY_ONLY'#TODO - replace with algo
+      $cache.set(key, uri)  #store them as actual URI objects so we can mess around with them later if we need to
+      JSON.generate({ "shrunk" => key, "original" => uri})
+    end
+  rescue Exception => e
+    JSON.generate({ "errormsg" => e.to_s})
+  end
+    
+end
 
 #create base36 hash
 def getNextKey
