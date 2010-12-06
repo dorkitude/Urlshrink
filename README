@@ -21,7 +21,7 @@ If you'd like to wire up your own front end, here's a simple API definition for 
     -Returns one of the following:
         Error: {"errormsg" : "some error message here"}
             -OR-
-        Sucess: {"shrunk":"abcdefg", "original":"http://your.original.url\"}  (here, "abcdefg" is the shortened key)
+        Sucess: {"shrunk":"abcdefg", "original":"http://your.original.url "}  (here, "abcdefg" is the shortened key)
 
 
 For TODOs, see Issues list
